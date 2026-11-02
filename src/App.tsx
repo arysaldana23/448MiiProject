@@ -15,7 +15,15 @@ type MiiState = {
   eyeSize: number
   eyeRotation: number
   noseStyle: number
+  noseY: number
+  noseX: number
+  noseSize: number
+  noseRotation: number
   mouthStyle: number
+  mouthY: number
+  mouthX: number
+  mouthSize: number
+  mouthRotation: number
   glasses: number
   facialHair: number
   accessory: number
@@ -44,7 +52,15 @@ const initialMii: MiiState = {
   eyeSize: 1,
   eyeRotation: 0,
   noseStyle: 0,
+  noseY: 0,
+  noseX: 0,
+  noseSize: 1,
+  noseRotation: 0,
   mouthStyle: 0,
+  mouthY: 0,
+  mouthX: 0,
+  mouthSize: 1,
+  mouthRotation: 0,
   glasses: 0,
   facialHair: 0,
   accessory: 0,
@@ -407,55 +423,63 @@ function MiiPreview({ mii }: { mii: MiiState }) {
           </g>
         </g>
 
-        {mii.noseStyle === 0 && (
-          <path
-            d="M139 178q-9 29 5 31"
-            fill="none"
-            stroke="#ad795f"
-            strokeWidth="3.5"
-            strokeLinecap="round"
-          />
-        )}
-        {mii.noseStyle === 1 && (
-          <path
-            d="M140 180c-7 14-8 25 0 29 8-4 7-15 0-29Z"
-            fill="#dda888"
-            stroke="#ad795f"
-            strokeWidth="2"
-          />
-        )}
-        {mii.noseStyle === 2 && (
-          <circle
-            cx="140"
-            cy="201"
-            r="9"
-            fill="#dda888"
-            stroke="#ad795f"
-            strokeWidth="2"
-          />
-        )}
+        <g
+          transform={`translate(${140 + mii.noseX * 2} ${200 + mii.noseY * 2}) rotate(${mii.noseRotation}) scale(${mii.noseSize}) translate(-140 -200)`}
+        >
+          {mii.noseStyle === 0 && (
+            <path
+              d="M139 178q-9 29 5 31"
+              fill="none"
+              stroke="#ad795f"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+            />
+          )}
+          {mii.noseStyle === 1 && (
+            <path
+              d="M140 180c-7 14-8 25 0 29 8-4 7-15 0-29Z"
+              fill="#dda888"
+              stroke="#ad795f"
+              strokeWidth="2"
+            />
+          )}
+          {mii.noseStyle === 2 && (
+            <circle
+              cx="140"
+              cy="201"
+              r="9"
+              fill="#dda888"
+              stroke="#ad795f"
+              strokeWidth="2"
+            />
+          )}
+        </g>
 
-        {mii.mouthStyle === 0 && (
-          <path
-            d="M113 226q27 25 54 0"
-            fill="none"
-            stroke="#7e3737"
-            strokeWidth="5"
-            strokeLinecap="round"
-          />
-        )}
-        {mii.mouthStyle === 1 && (
-          <path
-            d="M114 236q26-21 52 0"
-            fill="none"
-            stroke="#7e3737"
-            strokeWidth="5"
-            strokeLinecap="round"
-          />
-        )}
-        {mii.mouthStyle === 2 && (
-          <ellipse cx="140" cy="232" rx="24" ry="11" fill="#9c4d53" />
-        )}
+        <g
+          transform={`translate(${140 + mii.mouthX * 2} ${232 + mii.mouthY * 2}) rotate(${mii.mouthRotation}) scale(${mii.mouthSize}) translate(-140 -232)`}
+        >
+          {mii.mouthStyle === 0 && (
+            <path
+              d="M113 226q27 25 54 0"
+              fill="none"
+              stroke="#7e3737"
+              strokeWidth="5"
+              strokeLinecap="round"
+            />
+          )}
+          {mii.mouthStyle === 1 && (
+            <path
+              d="M114 236q26-21 52 0"
+              fill="none"
+              stroke="#7e3737"
+              strokeWidth="5"
+              strokeLinecap="round"
+            />
+          )}
+          {mii.mouthStyle === 2 && (
+            <ellipse cx="140" cy="232" rx="24" ry="11" fill="#9c4d53" />
+          )}
+        </g>
 
         {mii.facialHair === 1 && (
           <path
@@ -691,7 +715,7 @@ const keyboardRows = [
 ]
 
 export default function App() {
-  const [category, setCategory] = useState<CategoryId>("eyes")
+  const [category, setCategory] = useState<CategoryId>("face")
   const [history, setHistory] = useState<History>({
     past: [],
     present: initialMii,
@@ -1194,6 +1218,140 @@ export default function App() {
                 data-focusable
               >
                 Reset eye adjustments
+              </button>
+            </>
+          ) : category === "nose" ? (
+            <>
+              <div className="adjust-title">
+                <div>
+                  <span className="eyebrow">Fine tune</span>
+                  <h2>Nose adjustments</h2>
+                </div>
+                <span className="context-icon">
+                  <Icon name="nose" />
+                </span>
+              </div>
+              <p className="adjust-intro">
+                Use buttons for quick steps or select anywhere on a slider.
+              </p>
+              <AdjustRow
+                label="Vertical position"
+                value={mii.noseY}
+                min={-8}
+                max={8}
+                step={1}
+                leftIcon="up"
+                rightIcon="down"
+                onChange={(noseY) => updateMii({ noseY })}
+              />
+              <AdjustRow
+                label="Horizontal position"
+                value={mii.noseX}
+                min={-8}
+                max={8}
+                step={1}
+                leftIcon="left"
+                rightIcon="right"
+                onChange={(noseX) => updateMii({ noseX })}
+              />
+              <AdjustRow
+                label="Size"
+                value={Math.round((mii.noseSize - 1) * 10)}
+                min={-3}
+                max={5}
+                step={1}
+                leftIcon="minus"
+                rightIcon="plus"
+                onChange={(value) => updateMii({ noseSize: 1 + value / 10 })}
+              />
+              <AdjustRow
+                label="Rotation"
+                value={mii.noseRotation}
+                min={-15}
+                max={15}
+                step={3}
+                leftIcon="rotateLeft"
+                rightIcon="rotateRight"
+                onChange={(noseRotation) => updateMii({ noseRotation })}
+              />
+              <button
+                className="reset-button"
+                onClick={() =>
+                  updateMii(
+                    { noseY: 0, noseX: 0, noseSize: 1, noseRotation: 0 },
+                    "Nose adjustments reset",
+                  )
+                }
+                data-focusable
+              >
+                Reset nose adjustments
+              </button>
+            </>
+          ) : category === "mouth" ? (
+            <>
+              <div className="adjust-title">
+                <div>
+                  <span className="eyebrow">Fine tune</span>
+                  <h2>Mouth adjustments</h2>
+                </div>
+                <span className="context-icon">
+                  <Icon name="mouth" />
+                </span>
+              </div>
+              <p className="adjust-intro">
+                Use buttons for quick steps or select anywhere on a slider.
+              </p>
+              <AdjustRow
+                label="Vertical position"
+                value={mii.mouthY}
+                min={-8}
+                max={8}
+                step={1}
+                leftIcon="up"
+                rightIcon="down"
+                onChange={(mouthY) => updateMii({ mouthY })}
+              />
+              <AdjustRow
+                label="Horizontal position"
+                value={mii.mouthX}
+                min={-8}
+                max={8}
+                step={1}
+                leftIcon="left"
+                rightIcon="right"
+                onChange={(mouthX) => updateMii({ mouthX })}
+              />
+              <AdjustRow
+                label="Size"
+                value={Math.round((mii.mouthSize - 1) * 10)}
+                min={-3}
+                max={5}
+                step={1}
+                leftIcon="minus"
+                rightIcon="plus"
+                onChange={(value) => updateMii({ mouthSize: 1 + value / 10 })}
+              />
+              <AdjustRow
+                label="Rotation"
+                value={mii.mouthRotation}
+                min={-15}
+                max={15}
+                step={3}
+                leftIcon="rotateLeft"
+                rightIcon="rotateRight"
+                onChange={(mouthRotation) => updateMii({ mouthRotation })}
+              />
+              <button
+                className="reset-button"
+                onClick={() =>
+                  updateMii(
+                    { mouthY: 0, mouthX: 0, mouthSize: 1, mouthRotation: 0 },
+                    "Mouth adjustments reset",
+                  )
+                }
+                data-focusable
+              >
+                Reset mouth adjustments
               </button>
             </>
           ) : category === "profile" ? (
