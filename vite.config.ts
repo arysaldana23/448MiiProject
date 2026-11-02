@@ -26,6 +26,7 @@ react(),
       figmaReactRefreshBoundaryFallback(),
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
       figmaLinkedPackageSourcemaps(),
+      excludeLocalSoundEffects(),
     ],
     resolve: {
       alias: {
@@ -48,6 +49,25 @@ react(),
     },
   }
 })
+
+/**
+ * The Mii Channel sound effects in public/ffl/sfx/ are local-only Nintendo audio.
+ * Vite copies public/ into the build, so remove them from the output to keep
+ * them from being published. Built apps run without sound effects.
+ */
+function excludeLocalSoundEffects(): Plugin {
+  let outDir = ''
+  return {
+    name: 'exclude-local-sound-effects',
+    apply: 'build',
+    configResolved(config) {
+      outDir = path.resolve(config.root, config.build.outDir)
+    },
+    closeBundle() {
+      fs.rmSync(path.join(outDir, 'ffl', 'sfx'), { recursive: true, force: true })
+    },
+  }
+}
 
 type FigmaSiteConfiguration = {
   title?: string

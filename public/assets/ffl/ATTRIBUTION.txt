@@ -1,0 +1,11 @@
+AFLResHigh_2_3.dat is the Miitomo / Wii U FFL high resource.
+Documented source: FFL-Testing README, archive.org capture of
+http://download-cdn.miitomo.com/native/20180125111639/android/v2/asset_model_character_mii_AFLResHigh_2_3_dat.zip
+(Wayback 2018-05-02).
+It contains Nintendo Mii meshes and textures. It is stored only under public/ffl/, which is gitignored, and must not be committed or published.
+
+FFL.js (https://github.com/ariankordi/FFL.js, v2.2.2) is AGPL-3.0-only. It is a JavaScript binding to the Wii U FFL decompilation by aboood40091, not Nintendo's original Wii renderer.
+
+The preview uses FFLShaderMaterial, the Wii U FFL shader port. FFL.js also includes NigaoeShaderMaterial, a Wii Mii Channel-style light. That shader draws this resource's face mask as raw green and blue color keys, so it is not used for the preview. The geometry is Miitomo/Wii U FFL, not the original Wii RFL meshes.
+
+Feature counts used by the editor were verified against this WASM build: 12 faces, 132 hairstyles, 60 eyes, 28 eyebrows, 18 noses, 36 mouths, 9 glasses, 6 moustaches, 6 beards, and 2 mole states. Hair, eye, mouth, and skin swatches use the color tables from FFLiColor.cpp in that decompilation.

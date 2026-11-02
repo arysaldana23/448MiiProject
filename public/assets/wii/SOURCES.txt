@@ -1,0 +1,31 @@
+Original Wii Mii Channel sprite sheets supplied locally for this school prototype.
+These are 2D graphics. They are not 3D meshes and they are not RFL_Res.dat.
+
+Body Part Icons
+Source file: "Wii - Mii Channel - Miscellaneous - Body Part Icons.png"
+Used for category icons and the feature thumbnails that match options in this editor
+(face, hair, brows, eyes, nose, mouth, glasses, facial hair, and a beauty mark).
+The sheet credit panel in the corner is not shown.
+
+Channel Icon
+Source file: "Wii - Mii Channel - Miscellaneous - Channel Icon.png"
+Used: the white "Mii" wordmark only.
+Annotation text, the sample face row, and the credit line are not shown.
+
+Font
+Source file: "Wii - Mii Channel - Miscellaneous - Font.png"
+Inspected. Not used for interface text, so category labels stay real text.
+The credit mascot panel is not shown.
+
+Mii Plaza
+Source file: "Wii - Mii Channel - Miscellaneous - Mii Plaza.png"
+Inspected. Not used as a page background, so the editor stays a gray tool rather than a collage.
+The credit panel is not shown.
+
+Wii Menu Banner
+Source file: "Wii - Mii Channel - Miscellaneous - Wii Menu Banner.png"
+Used only as a visual reference for head, hair, body, and shading.
+The parade sprites are not placed in the interface. They are not a customizable 3D model.
+
+Wii and Mii are trademarks of their owners. This prototype is unofficial.
+Sprites were ripped for archival sheets by their respective dumpers; credit Nintendo for the software.

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>FFL.js Mii demo</title>
+    <style>
+      body { margin: 16px; font-family: system-ui, sans-serif; background: #e6e6e6; color: #222; }
+      canvas { background: #f7f7f7; border: 1px solid #bbb; }
+      button { margin: 4px; }
+      #log { white-space: pre-wrap; color: #8a1f1f; }
+    </style>
+  </head>
+  <body>
+    <h1>FFL.js isolated demo</h1>
+    <p>FFLShaderMaterial from FFL.js, using the Miitomo AFLResHigh resource. This is the Wii U FFL shader port, not Nintendo's original Wii renderer. The Nigaoe (Mii Channel) shader draws the face mask as raw color keys, so it is not used for the preview.</p>
+    <canvas id="view" width="520" height="520"></canvas>
+    <div id="controls"></div>
+    <p id="log"></p>
+    <script type="module" src="/src/ffl-demo.ts"></script>
+  </body>
+</html>

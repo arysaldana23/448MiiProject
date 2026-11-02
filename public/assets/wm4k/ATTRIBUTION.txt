@@ -1,0 +1,4 @@
+Mii Channel face texture from WM4K by Alan-bur and contributors.
+Source: https://github.com/Alan-bur/WM4K
+Original file: 0000000100000002/USA/Channels/Mii Channel/tex1_48x56_055a5fa475504cc8_14.png
+WM4K is an unofficial fan-made project. Wii and Mii trademarks belong to their respective owners. The repository does not specify a reuse license; verify permission before distributing this project.

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mii Channel SFX audition</title>
+<style>
+  :root { color-scheme: light; --ink: #24363a; --muted: #5d7377; --line: #d4e0e2; --accent: #0a9fc0; --bg: #f3f6f7; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, sans-serif; color: var(--ink); background: var(--bg); }
+  header { position: sticky; top: 0; z-index: 2; background: #fff; border-bottom: 1px solid var(--line); padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; }
+  h1 { font-size: 19px; margin: 0; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; max-width: 60ch; }
+  header label { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; padding: 20px 24px 60px; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+  .samples { display: grid; gap: 10px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 4px 14px; }
+  .card:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px #0a9fc022; }
+  .card.playing { background: #eefafd; }
+  .num { grid-row: span 3; display: grid; gap: 6px; align-content: start; }
+  .num strong { font-size: 22px; font-variant-numeric: tabular-nums; }
+  button { font: inherit; border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .play { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  canvas { width: 100%; height: 46px; background: #f7fafb; border-radius: 6px; display: block; }
+  .facts { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .flag { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 99px; background: #fff3d6; color: #6b4b00; margin-right: 4px; }
+  .flag.info { background: #e3f3f7; color: #0b5566; }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 13px; }
+  .roles { display: flex; flex-wrap: wrap; gap: 6px; }
+  .roles label { border: 1px solid var(--line); border-radius: 99px; padding: 2px 10px 2px 6px; font-size: 13px; display: flex; gap: 4px; align-items: center; cursor: pointer; }
+  .roles label:has(input:checked) { background: #dff4f9; border-color: var(--accent); }
+  .notes { grid-column: 2; width: 100%; font: inherit; font-size: 13px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; }
+  aside { position: sticky; top: 84px; align-self: start; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; max-height: calc(100vh - 104px); overflow: auto; }
+  aside h2 { font-size: 16px; margin: 0 0 4px; }
+  aside h3 { font-size: 14px; margin: 14px 0 4px; }
+  .cand { display: flex; gap: 6px; align-items: center; font-size: 13px; margin: 3px 0; }
+  .empty { color: var(--muted); font-size: 13px; margin: 2px 0; }
+  textarea { width: 100%; height: 150px; font: 12px ui-monospace, monospace; border: 1px solid var(--line); border-radius: 6px; }
+  .help { font-size: 12.5px; color: var(--muted); }
+  kbd { font: 11.5px ui-monospace, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: #fff; }
+  .error { background: #fde8e8; color: #7d1d1d; padding: 10px 14px; border-radius: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Mii Channel sound audition</h1>
+    <p>Sample_0000–0026 from <a href="https://sounds.spriters-resource.com/wii/miichannel/asset/423107/">The Sounds Resource</a>, uploaded by imJJ. Original sounds © Nintendo. Local copies only; nothing here is uploaded.</p>
+  </div>
+  <label>Volume <input id="volume" type="range" min="0" max="1" step="0.05" value="0.5" /></label>
+  <label><input id="normalize" type="checkbox" /> Match loudness</label>
+  <button id="stop" type="button">Stop all</button>
+  <p class="help"><kbd>↑</kbd><kbd>↓</kbd> move between samples · <kbd>Space</kbd> play · <kbd>1</kbd>–<kbd>5</kbd> toggle candidate roles</p>
+</header>
+<main>
+  <section class="samples" id="samples" aria-label="Samples"></section>
+  <aside aria-label="Candidates and final choice">
+    <h2>Candidates</h2>
+    <p class="help">Marks are kept in this browser. Pick one final sample per action, or leave it silent.</p>
+    <div id="summary"></div>
+    <h3>Final mapping</h3>
+    <textarea id="export" readonly aria-label="Final mapping as JSON"></textarea>
+    <button id="copy" type="button">Copy mapping</button>
+  </aside>
+</main>
+<script type="module">
+const ROLES = [
+  { id: "select", label: "Select feature / category" },
+  { id: "focus", label: "Move focus / hover" },
+  { id: "back", label: "Back / cancel" },
+  { id: "adjust", label: "Adjust a value" },
+  { id: "save", label: "Save / confirm" },
+]
+const STORE = "sfx-audition-v1"
+const BASE = "/ffl/sfx/samples/"
+const state = Object.assign({ marks: {}, notes: {}, final: {} }, JSON.parse(localStorage.getItem(STORE) || "{}"))
+const persist = () => { localStorage.setItem(STORE, JSON.stringify(state)); renderSummary() }
+
+const ctx = new AudioContext()
+const master = ctx.createGain()
+master.connect(ctx.destination)
+const volume = document.getElementById("volume")
+const normalize = document.getElementById("normalize")
+master.gain.value = Number(volume.value)
+volume.addEventListener("input", () => { master.gain.value = Number(volume.value) })
+
+const live = new Set()
+function stopAll() { for (const node of live) { try { node.stop() } catch {} } live.clear() }
+document.getElementById("stop").addEventListener("click", stopAll)
+
+let analysis = []
+try {
+  analysis = await (await fetch(BASE + "analysis.json")).json()
+} catch {
+  document.getElementById("samples").innerHTML = '<p class="error">Could not load ' + BASE + 'analysis.json. Copy the samples into public/ffl/sfx/samples first.</p>'
+  throw new Error("missing samples")
+}
+const timbre = await fetch(BASE + "timbre.json").then((r) => (r.ok ? r.json() : [])).catch(() => [])
+function describe(file) {
+  const t = timbre.find((row) => row.file === file)
+  if (!t) return ""
+  const pitch = t.notes.length ? `${[...new Set(t.notes)].join("→")}${t.contour !== "-" && t.contour !== "steady" ? ` (${t.contour} ${t.contour_semitones > 0 ? "+" : ""}${t.contour_semitones} st)` : ""}` : "no stable pitch"
+  const hits = t.onsets_ms.length > 1 ? ` · ${t.onsets_ms.length} hits at ${t.onsets_ms.join("/")} ms` : ""
+  const decay = t["decay_to_-20dB_ms"] != null ? ` · decays in ${t["decay_to_-20dB_ms"]} ms` : " · no natural decay"
+  return `<br>Measured: ${t.character} · ${pitch}${hits}${decay}`
+}
+const buffers = new Map()
+async function bufferFor(file) {
+  if (!buffers.has(file)) {
+    buffers.set(file, fetch(BASE + file).then((r) => { if (!r.ok) throw new Error(file + " " + r.status); return r.arrayBuffer() }).then((b) => ctx.decodeAudioData(b)))
+  }
+  return buffers.get(file)
+}
+
+async function play(info, { loop = false, rate = 1, card } = {}) {
+  await ctx.resume()
+  const buffer = await bufferFor(info.file)
+  const src = ctx.createBufferSource()
+  src.buffer = buffer
+  src.playbackRate.value = rate
+  const gain = ctx.createGain()
+  // Optional: bring every sample to the same RMS (-18 dBFS) so loud ones don't dominate comparisons.
+  gain.gain.value = normalize.checked && info.rms_dbfs ? Math.min(4, 10 ** ((-18 - info.rms_dbfs) / 20)) : 1
+  if (loop) {
+    src.loop = true
+    const smpl = info.loops?.[0]
+    if (smpl) { src.loopStart = smpl.start / info.rate; src.loopEnd = smpl.end / info.rate }
+  }
+  src.connect(gain).connect(master)
+  live.add(src)
+  card?.classList.add("playing")
+  src.onended = () => { live.delete(src); card?.classList.remove("playing") }
+  src.start()
+  return src
+}
+
+function drawWave(canvas, buffer) {
+  const dpr = devicePixelRatio || 1
+  canvas.width = canvas.clientWidth * dpr
+  canvas.height = canvas.clientHeight * dpr
+  const g = canvas.getContext("2d")
+  const data = buffer.getChannelData(0)
+  const mid = canvas.height / 2
+  g.fillStyle = "#0a9fc0"
+  for (let x = 0; x < canvas.width; x++) {
+    const a = Math.floor((x / canvas.width) * data.length)
+    const b = Math.max(a + 1, Math.floor(((x + 1) / canvas.width) * data.length))
+    let lo = 0, hi = 0
+    for (let i = a; i < b; i++) { lo = Math.min(lo, data[i]); hi = Math.max(hi, data[i]) }
+    g.fillRect(x, mid - hi * mid, 1, Math.max(1, (hi - lo) * mid))
+  }
+}
+
+function flags(info) {
+  const out = []
+  if (info.loops?.length) out.push(["Has loop points (instrument-style sample)", ""])
+  if (info.seconds < 0.05) out.push(["Under 50 ms", ""])
+  if (info.end_rel >= 0.3) out.push(["Still loud at last frame (cut off)", ""])
+  if (info.silent_pct >= 50) out.push([`${info.silent_pct}% silence`, ""])
+  if (info.channels === 2) out.push(["Stereo", "info"])
+  if (info.rate !== 44100) out.push([`${info.rate} Hz`, "info"])
+  return out.map(([t, c]) => `<span class="flag ${c}">${t}</span>`).join("")
+}
+
+const list = document.getElementById("samples")
+const cards = []
+for (const info of analysis) {
+  const n = info.file.match(/\d+/)[0]
+  const card = document.createElement("article")
+  card.className = "card"
+  card.dataset.file = info.file
+  card.setAttribute("aria-label", `Sample ${n}`)
+  card.innerHTML = `
+    <div class="num"><strong>${n}</strong><button class="play" type="button" aria-label="Play sample ${n}">Play</button></div>
+    <canvas aria-hidden="true"></canvas>
+    <div class="facts">${(info.seconds * 1000).toFixed(0)} ms · ${info.channels === 2 ? "stereo" : "mono"} · peak ${info.peak_dbfs} dBFS · RMS ${info.rms_dbfs} dBFS · peak at ${info.attack_ms} ms${describe(info.file)}<br>${flags(info)}</div>
+    <div class="controls">
+      <label><input type="checkbox" class="loop" /> Loop</label>
+      <label>Pitch <select class="rate" aria-label="Playback pitch for sample ${n}">
+        <option value="0.5">−12 st</option><option value="0.7491535">−5 st</option><option value="1" selected>original</option><option value="1.3348399">+5 st</option><option value="2">+12 st</option>
+      </select></label>
+      <button type="button" class="rapid" aria-label="Play sample ${n} four times quickly">Rapid ×4</button>
+      <div class="roles" role="group" aria-label="Candidate roles for sample ${n}">
+        ${ROLES.map((r, i) => `<label><input type="checkbox" data-role="${r.id}" ${state.marks[info.file]?.includes(r.id) ? "checked" : ""}/> ${i + 1} ${r.label}</label>`).join("")}
+      </div>
+    </div>
+    <input class="notes" type="text" placeholder="Notes (what does it sound like?)" aria-label="Notes for sample ${n}" value="${(state.notes[info.file] || "").replace(/"/g, "&quot;")}" />`
+  list.append(card)
+  cards.push(card)
+  let looping = null
+  const opts = () => ({ loop: card.querySelector(".loop").checked, rate: Number(card.querySelector(".rate").value), card })
+  card.querySelector(".play").addEventListener("click", async () => {
+    if (looping) { looping.stop(); looping = null; card.querySelector(".play").textContent = "Play"; return }
+    const o = opts()
+    const src = await play(info, o)
+    if (o.loop) { looping = src; card.querySelector(".play").textContent = "Stop" }
+  })
+  card.querySelector(".rapid").addEventListener("click", async () => {
+    for (let i = 0; i < 4; i++) { play(info, { ...opts(), loop: false }); await new Promise((r) => setTimeout(r, 90)) }
+  })
+  card.querySelectorAll("[data-role]").forEach((box) => box.addEventListener("change", () => {
+    const set = new Set(state.marks[info.file] || [])
+    box.checked ? set.add(box.dataset.role) : set.delete(box.dataset.role)
+    state.marks[info.file] = [...set]
+    if (!box.checked && state.final[box.dataset.role] === info.file) delete state.final[box.dataset.role]
+    persist()
+  }))
+  card.querySelector(".notes").addEventListener("input", (e) => { state.notes[info.file] = e.target.value; persist() })
+  bufferFor(info.file).then((b) => drawWave(card.querySelector("canvas"), b)).catch(() => {
+    card.querySelector(".facts").insertAdjacentHTML("beforeend", '<span class="flag">Browser could not decode this file</span>')
+  })
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.target.matches?.('input[type="text"], textarea, select')) return
+  const card = e.target.closest?.(".card")
+  const index = cards.indexOf(card)
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    const next = cards[Math.max(0, Math.min(cards.length - 1, (index < 0 ? -1 : index) + (e.key === "ArrowDown" ? 1 : -1)))]
+    next.querySelector(".play").focus()
+    next.scrollIntoView({ block: "nearest" })
+    e.preventDefault()
+  } else if (card && /^[1-5]$/.test(e.key)) {
+    const box = card.querySelectorAll("[data-role]")[Number(e.key) - 1]
+    box.click()
+    e.preventDefault()
+  } else if (card && e.key === " " && !e.target.matches("button, input[type=checkbox]")) {
+    card.querySelector(".play").click()
+    e.preventDefault()
+  }
+})
+
+function renderSummary() {
+  const box = document.getElementById("summary")
+  box.innerHTML = ""
+  for (const role of ROLES) {
+    const files = Object.entries(state.marks).filter(([, roles]) => roles.includes(role.id)).map(([f]) => f).sort()
+    const h = document.createElement("h3")
+    h.textContent = role.label
+    box.append(h)
+    if (!files.length) { box.insertAdjacentHTML("beforeend", '<p class="empty">No candidates yet. Final: silent.</p>'); continue }
+    const group = document.createElement("div")
+    group.setAttribute("role", "radiogroup")
+    group.setAttribute("aria-label", "Final sample for " + role.label)
+    for (const file of [...files, null]) {
+      const row = document.createElement("div")
+      row.className = "cand"
+      const id = `final-${role.id}-${file || "none"}`
+      row.innerHTML = `<input type="radio" name="final-${role.id}" id="${id}" ${state.final[role.id] === file || (!file && !state.final[role.id]) ? "checked" : ""}/>
+        <label for="${id}">${file ? file.replace(".wav", "") : "Silent (no sound)"}</label>`
+      if (file) {
+        const btn = document.createElement("button")
+        btn.type = "button"
+        btn.textContent = "Play"
+        btn.setAttribute("aria-label", `Play ${file} as ${role.label}`)
+        btn.addEventListener("click", () => play(analysis.find((a) => a.file === file)))
+        row.append(btn)
+      }
+      row.querySelector("input").addEventListener("change", () => {
+        if (file) state.final[role.id] = file; else delete state.final[role.id]
+        persist()
+      })
+      group.append(row)
+    }
+    box.append(group)
+  }
+  document.getElementById("export").value = JSON.stringify(
+    Object.fromEntries(ROLES.map((r) => [r.id, state.final[r.id] || null])), null, 2)
+}
+renderSummary()
+document.getElementById("copy").addEventListener("click", () => navigator.clipboard.writeText(document.getElementById("export").value))
+</script>
+</body>
+</html>

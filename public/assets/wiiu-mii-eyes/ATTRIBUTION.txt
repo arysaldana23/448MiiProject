@@ -1,0 +1,6 @@
+Wii U Mii Maker eye parts, isolated from a user-supplied sprite sheet.
+Source file: "Wii U - Wii U Menu - Mii Maker - Mii Eyes.png"
+The sheet is labeled "Mii Maker Eyes" and "Ripped by xAct".
+These textures are from the Wii U Menu Mii Maker. They are not original Wii RFL meshes or textures, and they are not a customizable 3D character.
+Only two parts are used: a round eye outline and one catchlight. The sheet's lids, pairs, and partial shapes are not applied as whole eyes, so iris color and the three editor eye shapes still work.
+Wii U and Mii are trademarks of their owners. This school prototype is unofficial.

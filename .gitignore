@@ -1,4 +1,6 @@
 node_modules/
+# Nintendo Mii resource required by FFL.js. Local only. Do not commit.
+public/ffl/
 dist/
 build/
 .cache/
@@ -19,3 +21,9 @@ logs/
 # beside it.
 /.plugins/
 /.opencode-skills/
+
+# Class presentation materials — keep local / ZIP only; do not commit.
+PRESENTATION-CURRENT.md
+PRESENTATION-CHANGES.md
+SETUP-CLASS-SHARE.md
+/presentation/
